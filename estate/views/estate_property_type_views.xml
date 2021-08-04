@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="estate_property_type_tree">
+        <field name="name">estate_property_type.tree</field>
+        <field name="model">estate.property.type</field>
+        <field name="arch" type="xml">
+            <tree editable="top">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="action_estate_property_type" model="ir.actions.act_window">
+        <field name="name">Property Types</field>
+        <field name="res_model">estate.property.type</field>
+        <field name="view_mode">tree</field>
+    </record>
+    <menuitem id="settings_menu" name="Settings" parent="estate_menu_root"/>
+    <menuitem id="estate_property_type_menu" name="Property Types" parent="settings_menu" action="action_estate_property_type"/>
+</odoo>
