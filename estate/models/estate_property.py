@@ -1,7 +1,7 @@
 # Copyright 2021, Jarsa
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class EstateProperty(models.Model):
@@ -75,6 +75,25 @@ class EstateProperty(models.Model):
         comodel_name='estate.property.offer',
         inverse_name='property_id',
     )
+    total_area = fields.Float(
+        compute='_compute_total_area',
+    )
+    best_price = fields.Float(
+        compute='_compute_best_price',
+    )
+
+    @api.depends('living_area', 'garden_area')
+    def _compute_total_area(self):
+        for rec in self:
+            rec.total_area = rec.living_area + rec.garden_area
+
+    @api.depends('offer_ids.price')
+    def _compute_best_price(self):
+        for rec in self:
+            best_price = 0
+            if rec.offer_ids:
+                best_price = max(rec.offer_ids.mapped('price'))
+            rec.best_price = best_price
 
 
 class EstatePropertyOffer(models.Model):
@@ -97,3 +116,20 @@ class EstatePropertyOffer(models.Model):
         comodel_name='estate.property',
         required=True,
     )
+    date_deadline = fields.Date(
+        compute='_compute_date_deadline',
+        inverse='_inverse_date_deadline',
+    )
+    validity = fields.Integer(
+        default=7,
+    )
+
+    @api.depends('validity', 'create_date')
+    def _compute_date_deadline(self):
+        for rec in self:
+            rec.date_deadline = fields.Date.add(
+                rec.create_date, days=+rec.validity)
+
+    def _inverse_date_deadline(self):
+        for rec in self:
+            rec.validity = (rec.date_deadline - rec.create_date.date()).days
