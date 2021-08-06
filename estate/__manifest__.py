@@ -7,7 +7,7 @@
     'version': '13.0.1.0.0',
     'category': 'Real Estte',
     'website': 'https://www.jarsa.com.mx/',
-    'author': 'Jarsa',
+    'author': 'Jarsa Sistemas',
     'license': 'LGPL-3',
     'depends': [
         'base',

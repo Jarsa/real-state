@@ -95,6 +95,25 @@ class EstateProperty(models.Model):
                 best_price = max(rec.offer_ids.mapped('price'))
             rec.best_price = best_price
 
+    @api.onchange('garden')
+    def _onchange_garden(self):
+        if self.garden:
+            self.update({
+                'garden_area': 10,
+                'garden_orientation': 'north',
+            })
+        else:
+            self.update({
+                'garden_area': 0,
+                'garden_orientation': False,
+            })
+        return {
+            'warning': {
+                'title': 'Test',
+                'message': 'Este es un mensaje de error',
+            }
+        }
+
 
 class EstatePropertyOffer(models.Model):
     _name = 'estate.property.offer'
