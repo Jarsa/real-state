@@ -2,6 +2,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class EstateProperty(models.Model):
@@ -82,6 +83,18 @@ class EstateProperty(models.Model):
         compute='_compute_best_price',
     )
 
+    def action_sold(self):
+        for rec in self:
+            if rec.state == 'canceled':
+                raise UserError('You cannot sell a cancelled property.')
+            rec.state = 'sold'
+
+    def action_cancel(self):
+        for rec in self:
+            if rec.state == 'sold':
+                raise UserError('You cannot cancell a selled property.')
+            rec.state = 'canceled'
+
     @api.depends('living_area', 'garden_area')
     def _compute_total_area(self):
         for rec in self:
@@ -146,9 +159,24 @@ class EstatePropertyOffer(models.Model):
     @api.depends('validity', 'create_date')
     def _compute_date_deadline(self):
         for rec in self:
+            create_date = rec.create_date or fields.Date.context_today(rec)
             rec.date_deadline = fields.Date.add(
-                rec.create_date, days=+rec.validity)
+                create_date, days=+rec.validity)
 
     def _inverse_date_deadline(self):
         for rec in self:
             rec.validity = (rec.date_deadline - rec.create_date.date()).days
+
+    def action_accept(self):
+        for rec in self:
+            if any([x == 'accepted' for x in rec.property_id.offer_ids.mapped('status')]):
+                raise UserError('You can only accept 1 offer.')
+            rec.property_id.write({
+                'buyer_id': rec.partner_id.id,
+                'selling_price': rec.price,
+            })
+            rec.status = 'accepted'
+
+    def action_refuse(self):
+        for rec in self:
+            rec.status = 'refused'

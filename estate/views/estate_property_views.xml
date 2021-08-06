@@ -20,6 +20,22 @@
         <field name="model">estate.property</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button
+                        name="action_sold"
+                        states="new,offer_received,offer_accepted"
+                        string="Sold"
+                        type="object"
+                        class="oe_highlight"
+                    />
+                    <button
+                        name="action_cancel"
+                        states="new,offer_received,offer_accepted,sold"
+                        string="Cancel"
+                        type="object"
+                    />
+                    <field name="state" widget="statusbar" statusbar_visible="new,offer_received,offer_accepted,sold"/>
+                </header>
                 <sheet>
                     <h1><field name="name"/></h1>
                     <field name="tag_ids" nolabel="1" widget="many2many_tags" placeholder="Tags..."/>
@@ -57,6 +73,8 @@
                                     <field name="date_deadline"/>
                                     <field name="validity"/>
                                     <field name="status"/>
+                                    <button name="action_accept" string="Accept" type="object" icon="fa-check"/>
+                                    <button name="action_refuse" string="Refuse" type="object" icon="fa-times"/>
                                 </tree>
                             </field>
                         </page>
