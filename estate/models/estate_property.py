@@ -83,6 +83,12 @@ class EstateProperty(models.Model):
         compute='_compute_best_price',
     )
 
+    _sql_constraints = [
+        ('name_uniq', 'unique(name)', 'Property name already exist!'),
+        ('expected_price_positive', 'check(expected_price > 0)', 'The expected price must be positive'),
+        ('selling_price_positive', 'check(selling_price > 0)', 'The selling price must be positive'),
+    ]
+
     def action_sold(self):
         for rec in self:
             if rec.state == 'canceled':
@@ -120,12 +126,6 @@ class EstateProperty(models.Model):
                 'garden_area': 0,
                 'garden_orientation': False,
             })
-        return {
-            'warning': {
-                'title': 'Test',
-                'message': 'Este es un mensaje de error',
-            }
-        }
 
 
 class EstatePropertyOffer(models.Model):
@@ -147,6 +147,7 @@ class EstatePropertyOffer(models.Model):
     property_id = fields.Many2one(
         comodel_name='estate.property',
         required=True,
+        ondelete='cascade',
     )
     date_deadline = fields.Date(
         compute='_compute_date_deadline',
@@ -155,6 +156,10 @@ class EstatePropertyOffer(models.Model):
     validity = fields.Integer(
         default=7,
     )
+
+    _sql_constraints = [
+        ('price_positive', 'check(price > 0)', 'The price must be positive'),
+    ]
 
     @api.depends('validity', 'create_date')
     def _compute_date_deadline(self):
