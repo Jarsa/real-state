@@ -3,11 +3,13 @@
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools.float_utils import float_compare
 
 
 class EstateProperty(models.Model):
     _name = "estate.property"
     _description = "Real Estate Property"
+    _order = 'id desc'
 
     name = fields.Char(
         required=True,
@@ -58,6 +60,7 @@ class EstateProperty(models.Model):
     )
     property_type_id = fields.Many2one(
         comodel_name='estate.property.type',
+        ondelete='restrict',
     )
     buyer_id = fields.Many2one(
         comodel_name='res.partner',
@@ -127,10 +130,23 @@ class EstateProperty(models.Model):
                 'garden_orientation': False,
             })
 
+    @api.constrains('selling_price', 'expected_price')
+    def _check_selling_price(self):
+        for rec in self:
+            expected_price = rec.expected_price * 0.9
+            if rec.selling_price and float_compare(
+                    rec.selling_price, expected_price, precision_digits=2
+                    ) == -1:
+                raise UserError(
+                    'The selling price cannot be less than 90% of '
+                    'the expected price.'
+                )
+
 
 class EstatePropertyOffer(models.Model):
     _name = 'estate.property.offer'
     _description = 'Real Estate Property Offer'
+    _order = 'price desc'
 
     price = fields.Float()
     status = fields.Selection(
