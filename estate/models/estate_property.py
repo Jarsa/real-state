@@ -172,6 +172,9 @@ class EstatePropertyOffer(models.Model):
     validity = fields.Integer(
         default=7,
     )
+    property_type_id = fields.Many2one(
+        related='property_id.property_type_id',
+    )
 
     _sql_constraints = [
         ('price_positive', 'check(price > 0)', 'The price must be positive'),
