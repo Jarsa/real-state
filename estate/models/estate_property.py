@@ -92,6 +92,12 @@ class EstateProperty(models.Model):
         ('selling_price_positive', 'check(selling_price > 0)', 'The selling price must be positive'),
     ]
 
+    def unlink(self):
+        for rec in self:
+            if rec.state not in ['new', 'canceled']:
+                raise UserError('You cannot delete a property in this state.')
+        return super().unlink()
+
     def action_sold(self):
         for rec in self:
             if rec.state == 'canceled':
@@ -179,6 +185,25 @@ class EstatePropertyOffer(models.Model):
     _sql_constraints = [
         ('price_positive', 'check(price > 0)', 'The price must be positive'),
     ]
+
+    @api.model
+    def create(self, vals):
+        estate_property = self.env['estate.property'].browse(vals.get('property_id'))
+        max_offer = 0
+        prices = estate_property.offer_ids.mapped('price')
+        if prices:
+            max_offer = max(prices)
+        if vals.get('price') < max_offer:
+            raise UserError('You cannot create an offer that is lower than the existing ones.')
+        estate_property.state = 'offer_received'
+        return super().create(vals)
+
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     for vals in vals_list:
+    #         return super().create(vals_list)
+
+    #     return super().create(vals_list)
 
     @api.depends('validity', 'create_date')
     def _compute_date_deadline(self):
