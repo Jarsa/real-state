@@ -125,6 +125,34 @@
             </form>
         </field>
     </record>
+    <record model="ir.ui.view" id="estate_property_kanban">
+        <field name="name">estate_property.kanban</field>
+        <field name="model">estate.property</field>
+        <field name="arch" type="xml">
+            <kanban records_draggable="0">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <field name="name"/><br/>
+                            <span>Expected Price: </span>
+                            <field name="expected_price"/>
+                            <t t-if="record.best_price.raw_value">
+                                <span>Best Price: </span>
+                                <field name="best_price"/>
+                            </t>
+                            <t t-if="record.selling_price.raw_value">
+                                <span>Selling Price: </span>
+                                <field name="selling_price"/>
+                            </t>
+                            <t t-if="record.tag_ids.raw_value">
+                                <field name="tag_ids"/>
+                            </t>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     <record model="ir.ui.view" id="estate_property_search">
         <field name="name">estate_property.search</field>
         <field name="model">estate.property</field>
@@ -163,7 +191,7 @@
     <record id="estate_property_action" model="ir.actions.act_window">
         <field name="name">Estate Property</field>
         <field name="res_model">estate.property</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,kanban</field>
         <field name="context">{
             'search_default_available': 1,
             'search_default_group_by_postcode': 1,
